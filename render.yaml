@@ -1,0 +1,16 @@
+
+services:
+  - type: web
+    name: telegram-price-bot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 bot.py
+    autoDeploy: true
+    region: oregon
+    runtime: python
+    envVars:
+      - key: TOKEN
+        value: 7590115389:AAGrbXxzt58py7cNmFhBtsWQKRT2e8Ai20s
+      - key: CHAT_ID
+        value: '2135324647'
