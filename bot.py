@@ -17,12 +17,24 @@ PRICE_HISTORY_FILE = 'price_history.json'
 # === ФУНКЦИИ ===
 def get_current_price():
     url = f'https://api.coingecko.com/api/v3/simple/price?ids={COIN_ID}&vs_currencies={VS_CURRENCY}'
-    r = requests.get(url)
-    return r.json()[COIN_ID][VS_CURRENCY]
+    try:
+        r = requests.get(url)
+        data = r.json()
+        if COIN_ID in data and VS_CURRENCY in data[COIN_ID]:
+            return data[COIN_ID][VS_CURRENCY]
+        else:
+            print("[!] CoinGecko API returned invalid data:", data)
+            return None
+    except Exception as e:
+        print("[!] Error fetching price:", e)
+        return None
 
 def send_alert(message):
     url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-    requests.post(url, data={'chat_id': CHAT_ID, 'text': message})
+    try:
+        requests.post(url, data={'chat_id': CHAT_ID, 'text': message})
+    except Exception as e:
+        print("[!] Error sending Telegram alert:", e)
 
 def load_price_history():
     try:
@@ -39,6 +51,10 @@ def main():
     alerted_levels = set()
     while True:
         current_price = get_current_price()
+        if current_price is None:
+            time.sleep(INTERVAL)
+            continue
+
         timestamp = datetime.utcnow().isoformat()
         history = load_price_history()
         history.append({'price': current_price, 'timestamp': timestamp})
